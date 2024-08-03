@@ -1,0 +1,72 @@
+<?php
+
+namespace Src\**BoundedContext**\**Domain**\Presentation\HTTP;
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Src\Common\Domain\Exceptions\UnauthorizedUserException;
+use Src\**BoundedContext**\**Domain**\Application\Mappers\**Domain**Mapper;
+use Src\**BoundedContext**\**Domain**\Application\UseCases\Commands\Delete**Domain**Command;
+use Src\**BoundedContext**\**Domain**\Application\UseCases\Commands\Store**Domain**Command;
+use Src\**BoundedContext**\**Domain**\Application\UseCases\Commands\Update**Domain**Command;
+use Src\**BoundedContext**\**Domain**\Application\UseCases\Queries\FindAll**Domain**sQuery;
+use Src\**BoundedContext**\**Domain**\Application\UseCases\Queries\Find**Domain**ByIdQuery;
+use Symfony\Component\HttpFoundation\Response;
+
+class **Domain**Controller
+{
+    public function index(): JsonResponse
+    {
+        try {
+            return response()->json((new FindAll**Domain**sQuery())->handle());
+        } catch (UnauthorizedUserException $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        try {
+            return response()->json((new Find**Domain**ByIdQuery($id))->handle());
+        } catch (UnauthorizedUserException $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        try {
+            $**domain_lc** = **Domain**Mapper::fromRequest($request);
+            $**domain_lc**Data = (new Store**Domain**Command($**domain_lc**))->execute();
+            return response()->json($**domain_lc**Data, Response::HTTP_CREATED);
+        } catch (\DomainException $domainException) {
+            return response()->json(['error' => $domainException->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (UnauthorizedUserException $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function update(int $id, Request $request): JsonResponse
+    {
+        try {
+            $**domain_lc** = **Domain**Mapper::fromRequest($request, $id);
+            (new Update**Domain**Command($**domain_lc**))->execute();
+            return response()->json($**domain_lc**, Response::HTTP_OK);
+        } catch (\DomainException $domainException) {
+            return response()->json(['error' => $domainException->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (UnauthorizedUserException $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            (new Delete**Domain**Command($id))->execute();
+            return response()->json(null, Response::HTTP_NO_CONTENT);
+        } catch (UnauthorizedUserException $e) {
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+}

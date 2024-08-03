@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Core\**BoundedContext**\Domain\Entities;
+
+use App\Concerns\AggregateRoot;
+
+class **BoundedContext**
+{
+    use AggregateRoot;
+    public function __construct(
+        // TODO Add properties
+    )
+    {}
+
+}

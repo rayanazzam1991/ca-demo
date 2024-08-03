@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Resources\V1\SharedSystem;
+
+use App\Http\Resources\Media\MediaResourc;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class FeedResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->{'title_' . app()->getLocale()},
+            'description' => $this->description,
+            'media' => $this->whenLoaded('medias', MediaResourc::make($this->medias)),
+            'createdAt' =>  Carbon::parse($this->created_at)->format('Y-m-d'),
+            'since' => $this->calcSince($this->created_at)
+        ];
+    }
+    private function calcSince($created_at)
+    {
+        $carbonDate = Carbon::parse($created_at);
+        $now = Carbon::now();
+        $dayDiff = $carbonDate->diffInDays($now);
+
+        if ($dayDiff === 0) {
+           return  __('main.today');
+        } elseif ($dayDiff === 1) {
+            return __('main.yesterday');
+        } elseif($dayDiff < 10) {
+            return __('main.day_plural', ['number' => $dayDiff]);
+        } else {
+            return __('main.day_single', ['number' => $dayDiff]);
+
+        }
+    }
+}
